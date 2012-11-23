@@ -204,6 +204,15 @@ if (grep -Fiq "hg+" requirements.txt) then
   pip install --use-mirrors mercurial | indent
 fi
 
+# Install libspotify
+puts-step "Install libspotify"
+git clone https://github.com/khamaileon/libspotify.git
+cd libspotify
+mkdir -p $BUILD_DIR/.heroku/libspotify
+make install prefix=$BUILD_DIR/.heroku/libspotify
+cd ..
+rm -r libspotify
+
 # Install dependencies with Pip.
 puts-step "Installing dependencies using pip version $(pip --version | awk '{print $2}')"
 pip install --use-mirrors -r requirements.txt --exists-action=w --src=./.heroku/src | indent
@@ -240,12 +249,14 @@ done
 
 set-env PATH '$HOME/.heroku/venv/bin:$PATH'
 set-default-env PYTHONUNBUFFERED true
-set-default-env LIBRARY_PATH /app/.heroku/vendor/lib
-set-default-env LD_LIBRARY_PATH /app/.heroku/vendor/lib
+set-default-env LIBRARY_PATH /app/.heroku/vendor/lib:/app/.heroku/libspotify/lib
+set-default-env LD_LIBRARY_PATH /app/.heroku/vendor/lib:/app/.heroku/libspotify/lib
 set-default-env LANG en_US.UTF-8
 set-default-env PYTHONHASHSEED random
 set-default-env PYTHONHOME /app/.heroku/venv/
 set-default-env PYTHONPATH /app/
+set-default-env PKG_CONFIG_PATH /app/.heroku/libspotify/lib/pkgconfig
+set-default-env CPATH /app/.heroku/libspotify/include
 
 # ### Fin.
 
